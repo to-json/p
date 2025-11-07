@@ -1,0 +1,43 @@
+#compdef wt-cd
+
+_wt-cd() {
+  local -a repos trees parent_dirs
+  parent_dirs=("$HOME/code" "$HOME/hc" "$HOME/scripts")
+
+  case $CURRENT in
+    2)
+      for parent in $parent_dirs; do
+        [[ -d "$parent" ]] || continue
+        for repo in "$parent"/*(/N); do
+          local name=${repo:t}
+          [[ "$name" == *.* ]] && continue
+          repos+=("$name")
+        done
+      done
+      _describe -t repositories 'repository' repos
+      ;;
+
+    3)
+      local repo_name=$words[2]
+      local repo_parent
+
+      for parent in $parent_dirs; do
+        if [[ -d "$parent/$repo_name" ]]; then
+          repo_parent=$parent
+          break
+        fi
+      done
+
+      if [[ -n $repo_parent ]]; then
+        for worktree in "$repo_parent/$repo_name".*(/N); do
+          local tree_name=${worktree:t}
+          tree_name=${tree_name#$repo_name.}
+          trees+=("$tree_name")
+        done
+        [[ ${#trees} -gt 0 ]] && _describe -t worktrees 'worktree' trees
+      fi
+      ;;
+  esac
+}
+
+_wt-cd "$@"
