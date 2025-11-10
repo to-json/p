@@ -54,6 +54,64 @@ wt-new() {
   cd "$worktree_path"
 }
 
+wt-checkout() {
+  local branch_name="${1:-}"
+
+  if [[ -z "$branch_name" ]]; then
+    echo "Usage: wt-checkout <branch>" >&2
+    return 1
+  fi
+
+  local repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [[ -z "$repo_root" ]]; then
+    echo "Error: Not in a git repository" >&2
+    return 1
+  fi
+
+  # Verify the branch exists (locally or remotely)
+  if ! git rev-parse --verify "$branch_name" >/dev/null 2>&1; then
+    # Try checking remote branches as fallback
+    local remote_check=$(git ls-remote --heads origin "$branch_name" 2>/dev/null)
+    if [[ -z "$remote_check" ]]; then
+      echo "Error: Branch '$branch_name' does not exist locally or on remote" >&2
+      return 1
+    fi
+  fi
+
+  local repo_name=$(basename "$repo_root")
+  local repo_parent=$(dirname "$repo_root")
+  local parent_name=$(basename "$repo_parent")
+
+  local valid_parent=false
+  for parent in code hc scripts; do
+    if [[ "$parent_name" == "$parent" ]]; then
+      valid_parent=true
+      break
+    fi
+  done
+
+  if [[ "$valid_parent" == false ]]; then
+    echo "Error: Repository must be in one of: code, hc, scripts" >&2
+    return 1
+  fi
+
+  # Replace '/' with '>' in branch name for the path
+  local path_name="${branch_name//\//-}"
+  local worktree_path="$repo_parent/$repo_name.$path_name"
+
+  if [[ -e "$worktree_path" ]]; then
+    echo "Error: Path already exists: $worktree_path" >&2
+    return 1
+  fi
+
+  echo "Checking out worktree:"
+  echo "  Branch: $branch_name"
+  echo "  Path: $worktree_path"
+
+  git worktree add "$worktree_path" "$branch_name"
+  cd "$worktree_path"
+}
+
 wt-cd() {
   local repo_name="${1:-}"
   local tree_name="${2:-}"
@@ -154,3 +212,12 @@ wt-goto() {
 
   cd "${paths[$index]}"
 }
+
+# Completion for wt-checkout
+_wt-checkout() {
+  local -a branches
+  branches=(${(f)"$(git branch --all --format='%(refname:short)' 2>/dev/null)"})
+  _describe 'branch' branches
+}
+
+compdef _wt-checkout wt-checkout

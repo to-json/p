@@ -3,7 +3,7 @@
 _p() {
   local -a subcommands parent_dirs repos trees
   parent_dirs=("$HOME/code" "$HOME/hc" "$HOME/scripts")
-  subcommands=('new:create new worktree' 'cd:navigate to repo or worktree' 'done:remove current worktree' 'goto:fuzzy-find repo or worktree' 'g:fuzzy-find repo or worktree')
+  subcommands=('new:create new worktree' 'get:checkout existing branch as worktree' 'cd:navigate to repo or worktree' 'done:remove current worktree' 'goto:fuzzy-find repo or worktree' 'g:fuzzy-find repo or worktree')
 
   case $CURRENT in
     2)
@@ -12,6 +12,11 @@ _p() {
 
     3)
       case $words[2] in
+        get)
+          local -a branches
+          branches=(${(f)"$(git branch --all --format='%(refname:short)' 2>/dev/null)"})
+          _describe -t branches 'branch' branches
+          ;;
         cd)
           for parent in $parent_dirs; do
             [[ -d "$parent" ]] || continue

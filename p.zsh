@@ -4,7 +4,7 @@ p() {
   local cmd="${1:-}"
 
   if [[ -z "$cmd" ]]; then
-    echo "Usage: p <new|cd|done|goto> [args...]" >&2
+    echo "Usage: p <new|get|cd|done|goto> [args...]" >&2
     return 1
   fi
 
@@ -13,6 +13,9 @@ p() {
   case "$cmd" in
     new)
       wt-new "$@"
+      ;;
+    get)
+      wt-checkout "$@"
       ;;
     cd)
       wt-cd "$@"
@@ -25,7 +28,7 @@ p() {
       ;;
     *)
       echo "Error: Unknown command '$cmd'" >&2
-      echo "Available: new, cd, done, goto (g)" >&2
+      echo "Available: new, get, cd, done, goto (g)" >&2
       return 1
       ;;
   esac
