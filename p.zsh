@@ -3,11 +3,29 @@
 # Source worktree functions
 source "$HOME/scripts/git/worktree.zsh"
 
+p-help() {
+  cat <<'EOF'
+Git Worktree Management Commands
+
+p (n)ew <title>             Create new worktree with branch username/<title>
+p (c)heckout <branch>       Checkout existing branch as worktree
+p (s)witch <repo> [suffix]  Navigate to repo or worktree
+p (d)one                    Remove current worktree and delete branch
+p (g)oto                    Fuzzy-find and navigate to repo/worktree
+p (u)se                     Fuzzy-find branch across all repos and switch
+p (h)elp                    Show this help message
+
+Configuration:
+  WT_REPO_PARENTS       Parent directories to search for repos
+  WT_REMOTE_PROJECTS    Projects to include remote branches in p use
+EOF
+}
+
 p() {
   local cmd="${1:-}"
 
   if [[ -z "$cmd" ]]; then
-    echo "Usage: p <(n)ew|g(e)t|(c)d|(d)one|(g)oto|(u)se> [args...]" >&2
+    echo "Usage: p <(n)ew|(c)heckout|(s)witch|(d)one|(g)oto|(u)se|(h)elp> [args...]" >&2
     return 1
   fi
 
@@ -17,10 +35,10 @@ p() {
     new|n)
       wt-new "$@"
       ;;
-    get|e)
+    checkout|c)
       wt-checkout "$@"
       ;;
-    cd|c)
+    switch|s)
       wt-cd "$@"
       ;;
     done|d)
@@ -32,9 +50,12 @@ p() {
     use|u)
       wt-use "$@"
       ;;
+    help|h)
+      p-help "$@"
+      ;;
     *)
       echo "Error: Unknown command '$cmd'" >&2
-      echo "Available: (n)ew, g(e)t, (c)d, (d)one, (g)oto, (u)se" >&2
+      echo "Available: (n)ew, (c)heckout, (s)witch, (d)one, (g)oto, (u)se, (h)elp" >&2
       return 1
       ;;
   esac

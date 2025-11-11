@@ -8,16 +8,18 @@ _p() {
   subcommands=(
     'new:create new worktree'
     'n:create new worktree'
-    'get:checkout existing branch as worktree'
-    'e:checkout existing branch as worktree'
-    'cd:navigate to repo or worktree'
-    'c:navigate to repo or worktree'
+    'checkout:checkout existing branch as worktree'
+    'c:checkout existing branch as worktree'
+    'switch:navigate to repo or worktree'
+    's:navigate to repo or worktree'
     'done:remove current worktree'
     'd:remove current worktree'
     'goto:fuzzy-find repo or worktree'
     'g:fuzzy-find repo or worktree'
     'use:fuzzy-find and switch to branch'
     'u:fuzzy-find and switch to branch'
+    'help:show help message'
+    'h:show help message'
   )
 
   case $CURRENT in
@@ -27,11 +29,11 @@ _p() {
 
     3)
       case $words[2] in
-        get|e)
+        checkout|c)
           branches=(${(f)"$(_wt_list_all_branches)"})
           _describe -t branches 'branch' branches
           ;;
-        cd|c)
+        switch|s)
           repos=(${(f)"$(_wt_list_all_repos)"})
           _describe -t repositories 'repository' repos
           ;;
@@ -40,9 +42,9 @@ _p() {
 
     4)
       case $words[2] in
-        cd|c)
+        switch|s)
           local repo_name=$words[3]
-          trees=(${(f)"$(_wt_list_worktrees "$repo_name" 2>/dev/null)"})
+          trees=(${(f)"$(_wt_list_worktree_suffixes "$repo_name" 2>/dev/null)"})
           [[ ${#trees} -gt 0 ]] && _describe -t worktrees 'worktree' trees
           ;;
       esac

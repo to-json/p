@@ -36,20 +36,6 @@ _wt_get_repo_root() {
   echo "$repo_root"
 }
 
-_wt_get_repo_info() {
-  local repo_root=$(_wt_get_repo_root) || return 1
-  local -A info
-  info[root]=$repo_root
-  info[name]=$(basename "$repo_root")
-  info[parent]=$(dirname "$repo_root")
-  info[parent_name]=$(basename "${info[parent]}")
-
-  for key val in ${(kv)info}; do
-    echo "$key=$val"
-  done
-}
-
-
 _wt_validate_repo_parent() {
   local parent_path="$1"
   for valid_parent in "${WT_REPO_PARENTS[@]}"; do
@@ -118,7 +104,7 @@ _wt_filter() {
 }
 
 _wt_get_main_worktree() {
-  local worktree_path="${1:-$(pwd)}"
+  local worktree_path="${1:-.}"
   git -C "$worktree_path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's:/\.git$::'
 }
 
