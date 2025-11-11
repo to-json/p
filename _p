@@ -1,9 +1,24 @@
 #compdef p
 
+# Source worktree functions for helpers
+source "$HOME/scripts/git/worktree.zsh"
+
 _p() {
-  local -a subcommands parent_dirs repos trees
-  parent_dirs=("$HOME/code" "$HOME/hc" "$HOME/scripts")
-  subcommands=('new:create new worktree' 'get:checkout existing branch as worktree' 'cd:navigate to repo or worktree' 'done:remove current worktree' 'goto:fuzzy-find repo or worktree' 'g:fuzzy-find repo or worktree')
+  local -a subcommands repos trees branches
+  subcommands=(
+    'new:create new worktree'
+    'n:create new worktree'
+    'get:checkout existing branch as worktree'
+    'e:checkout existing branch as worktree'
+    'cd:navigate to repo or worktree'
+    'c:navigate to repo or worktree'
+    'done:remove current worktree'
+    'd:remove current worktree'
+    'goto:fuzzy-find repo or worktree'
+    'g:fuzzy-find repo or worktree'
+    'use:fuzzy-find and switch to branch'
+    'u:fuzzy-find and switch to branch'
+  )
 
   case $CURRENT in
     2)
@@ -12,20 +27,12 @@ _p() {
 
     3)
       case $words[2] in
-        get)
-          local -a branches
-          branches=(${(f)"$(git branch --all --format='%(refname:short)' 2>/dev/null)"})
+        get|e)
+          branches=(${(f)"$(_wt_list_all_branches)"})
           _describe -t branches 'branch' branches
           ;;
-        cd)
-          for parent in $parent_dirs; do
-            [[ -d "$parent" ]] || continue
-            for repo in "$parent"/*(/N); do
-              local name=${repo:t}
-              [[ "$name" == *.* ]] && continue
-              repos+=("$name")
-            done
-          done
+        cd|c)
+          repos=(${(f)"$(_wt_list_all_repos)"})
           _describe -t repositories 'repository' repos
           ;;
       esac
@@ -33,25 +40,10 @@ _p() {
 
     4)
       case $words[2] in
-        cd)
+        cd|c)
           local repo_name=$words[3]
-          local repo_parent
-
-          for parent in $parent_dirs; do
-            if [[ -d "$parent/$repo_name" ]]; then
-              repo_parent=$parent
-              break
-            fi
-          done
-
-          if [[ -n $repo_parent ]]; then
-            for worktree in "$repo_parent/$repo_name".*(/N); do
-              local tree_name=${worktree:t}
-              tree_name=${tree_name#$repo_name.}
-              trees+=("$tree_name")
-            done
-            [[ ${#trees} -gt 0 ]] && _describe -t worktrees 'worktree' trees
-          fi
+          trees=(${(f)"$(_wt_list_worktrees "$repo_name" 2>/dev/null)"})
+          [[ ${#trees} -gt 0 ]] && _describe -t worktrees 'worktree' trees
           ;;
       esac
       ;;
