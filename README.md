@@ -6,6 +6,8 @@ Basically, I don't think "I am going to go work on project X" should involve
 the idea of directories, or worktrees, or whatever, you should be able to refer
 directly to branches and projects and let your tools do the rest.
 
+AI disclosure: this shit is like 98% vibes. works well tho. reads ok too.
+
 ## Installation
 
 ```bash
