@@ -27,6 +27,10 @@ WT_REMOTE_PROJECTS=(
   hound
 )
 
+WT_DEFAULT_REMOTE="origin"
+
+WT_BRANCH_PREFIX_TEMPLATE='$(_wt_get_username)/'
+
 _wt_get_repo_root() {
   local repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
   if [[ -z "$repo_root" ]]; then
@@ -117,7 +121,7 @@ _wt_branch_exists_locally() {
 _wt_branch_exists_on_remote() {
   local branch_name="$1"
   local repo_path="${2:-.}"
-  local remote_check=$(git -C "$repo_path" ls-remote --heads origin "$branch_name" 2>/dev/null)
+  local remote_check=$(git -C "$repo_path" ls-remote --heads "$WT_DEFAULT_REMOTE" "$branch_name" 2>/dev/null)
   [[ -n "$remote_check" ]]
 }
 
@@ -237,7 +241,7 @@ _wt_list_remote_branches_in() {
   remote_branches=(${(f)"$(git -C "$repo_path" branch --remotes --format='%(refname:short)' 2>/dev/null)"})
 
   for branch in "${remote_branches[@]}"; do
-    local short_branch="${branch#origin/}"
+    local short_branch="${branch#$WT_DEFAULT_REMOTE/}"
     [[ "$short_branch" == "HEAD" ]] && continue
     (( ${local_branches[(Ie)$short_branch]} )) && continue
     echo "$short_branch"
@@ -288,8 +292,8 @@ wt-new() {
 
   _wt_validate_repo_parent "$repo_parent" || return 1
 
-  local username=$(_wt_get_username)
-  local branch_name="$username/$title"
+  local branch_prefix=$(eval echo "$WT_BRANCH_PREFIX_TEMPLATE")
+  local branch_name="${branch_prefix}${title}"
   local worktree_suffix=$(_wt_sanitize_branch_name "$title")
   local worktree_path=$(_wt_build_worktree_path "$repo_parent" "$repo_name" "$worktree_suffix")
 
@@ -451,7 +455,7 @@ wt-use() {
       for repo_name in "${fetchable_repos[@]}"; do
         local repo_path=$(_wt_find_repo "$repo_name")
         echo "Fetching $repo_name..." >&2
-        git -C "$repo_path" fetch --quiet || {
+        git -C "$repo_path" fetch "$WT_DEFAULT_REMOTE" --quiet || {
           echo "Warning: Failed to fetch $repo_name" >&2
         }
       done

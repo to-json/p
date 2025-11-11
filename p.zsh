@@ -16,8 +16,10 @@ p (u)se                     Fuzzy-find branch across all repos and switch
 p (h)elp                    Show this help message
 
 Configuration:
-  WT_REPO_PARENTS       Parent directories to search for repos
-  WT_REMOTE_PROJECTS    Projects to include remote branches in p use
+  WT_REPO_PARENTS              Parent directories to search for repos
+  WT_REMOTE_PROJECTS           Projects to include remote branches in p use
+  WT_DEFAULT_REMOTE            Remote name (default: "origin")
+  WT_BRANCH_PREFIX_TEMPLATE    Branch naming template (default: '$(_wt_get_username)/')
 EOF
 }
 
